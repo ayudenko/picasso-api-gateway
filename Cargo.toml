@@ -10,4 +10,7 @@ actix-web = { version = "4", features = ["openssl"] }
 env_logger = "0.9"
 openssl = { version = "0.10", features = ["v110"] }
 dotenv = "0.15.0"
+hyper-tls = "0.5"
+hyper = { version = "0.14.0", features = ["full"] }
+tokio = { version = "1", features = ["full"] }
 

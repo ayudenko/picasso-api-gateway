@@ -1,6 +1,8 @@
-use actix_web::{get, post, web, App, HttpResponse, HttpServer, Responder};
+use actix_web::{get, web, App, HttpResponse, HttpServer, Responder};
 use openssl::ssl::{SslAcceptor, SslFiletype, SslMethod};
 use dotenv::dotenv;
+use hyper_tls::HttpsConnector;
+use hyper::Client;
 
 struct Config {
     ssl_key_path: String,
@@ -80,7 +82,6 @@ impl APIGateway {
         HttpServer::new(|| {
             App::new()
                 .service(hello)
-                .service(echo)
                 .route("/hey", web::get().to(manual_hello))
         })
         .bind_openssl(format!("{}:{}", self.config.host, self.config.port), builder)?
@@ -92,15 +93,17 @@ impl APIGateway {
 
 #[get("/")]
 async fn hello() -> impl Responder {
-    HttpResponse::Ok().body("Hello world!")
-}
-
-#[post("/echo")]
-async fn echo(req_body: String) -> impl Responder {
-    HttpResponse::Ok().body(req_body)
+    HttpResponse::Ok().body("Route \"/\"")
 }
 
 async fn manual_hello() -> impl Responder {
-    HttpResponse::Ok().body("Hey there!")
+    let https = HttpsConnector::new();
+    let client = Client::builder().build::<_, hyper::Body>(https);
+    let uri = "https://picasso-gateway.dev:5000/".parse().unwrap();
+    let resp = client.get(uri).await.unwrap();
+    println!("Response: {}", resp.status());
+    let body_bytes = hyper::body::to_bytes(resp.into_body()).await.unwrap();
+    println!("Body: {:?}", body_bytes);
+    HttpResponse::Ok().body(body_bytes)
 }
 
