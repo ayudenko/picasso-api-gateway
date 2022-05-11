@@ -1,0 +1,6 @@
+routes:
+  index:
+    name: index
+    pattern: /hey
+    url: /
+

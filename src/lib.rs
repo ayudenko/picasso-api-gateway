@@ -1,8 +1,10 @@
 use actix_web::{get, web, App, HttpResponse, HttpServer, Responder};
 use openssl::ssl::{SslAcceptor, SslFiletype, SslMethod};
 use dotenv::dotenv;
-use hyper_tls::HttpsConnector;
 use hyper::Client;
+use hyper_tls::HttpsConnector; 
+
+mod routes;
 
 struct Config {
     ssl_key_path: String,
@@ -10,6 +12,7 @@ struct Config {
     workers: usize,
     host: String,
     port: u16,
+    env: String,
 }
 
 impl Config {
@@ -39,6 +42,10 @@ impl Config {
             .parse::<u16>().unwrap_or_else(|_| {
                 panic!("PORT variable value should be of u16 type!")
             });
+        let env = dotenv::var("ENV")
+            .unwrap_or_else(|_| {
+                panic!("Can not read ENV variable from .env file!")
+            });
 
         Ok(Config {
             ssl_key_path,
@@ -46,8 +53,13 @@ impl Config {
             workers,
             host,
             port,
+            env,
         })
     }
+}
+
+struct APIConfig {
+
 }
 
 pub struct APIGateway {
@@ -92,11 +104,11 @@ impl APIGateway {
 }
 
 #[get("/")]
-async fn hello() -> impl Responder {
+pub async fn hello() -> impl Responder {
     HttpResponse::Ok().body("Route \"/\"")
 }
 
-async fn manual_hello() -> impl Responder {
+pub async fn manual_hello() -> impl Responder {
     let https = HttpsConnector::new();
     let client = Client::builder().build::<_, hyper::Body>(https);
     let uri = "https://picasso-gateway.dev:5000/".parse().unwrap();

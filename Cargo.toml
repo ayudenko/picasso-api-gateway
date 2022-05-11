@@ -13,4 +13,5 @@ dotenv = "0.15.0"
 hyper-tls = "0.5"
 hyper = { version = "0.14.0", features = ["full"] }
 tokio = { version = "1", features = ["full"] }
+yaml-rust = "0.4"
 
